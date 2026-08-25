@@ -14,6 +14,7 @@
  */
 
 export const THEME_IDS = [
+  "basto",
   "violet",
   "emerald",
   "cobalt",
@@ -23,7 +24,7 @@ export const THEME_IDS = [
 
 export type ThemeId = (typeof THEME_IDS)[number];
 
-export const DEFAULT_THEME: ThemeId = "violet";
+export const DEFAULT_THEME: ThemeId = "basto";
 
 export const STORAGE_KEY = "wacrm.theme";
 
@@ -67,6 +68,12 @@ export interface ThemeMeta {
 }
 
 export const THEMES: ReadonlyArray<ThemeMeta> = [
+  {
+    id: "basto",
+    name: "BASTO",
+    tagline: "La identidad de BASTO — turquesa sobre azul profundo.",
+    swatch: "#4ECDC4",
+  },
   {
     id: "violet",
     name: "Violet",

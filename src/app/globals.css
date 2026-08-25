@@ -161,6 +161,20 @@ html[data-theme="violet"] {
   --sidebar-ring: oklch(0.526 0.247 293);
 }
 
+html[data-theme="basto"] {
+  --primary: oklch(0.79 0.11 190);
+  --primary-foreground: oklch(0.24 0.03 250);
+  --primary-hover: oklch(0.68 0.1 185);
+  --primary-soft: oklch(0.79 0.11 190 / 0.12);
+  --primary-soft-2: oklch(0.79 0.11 190 / 0.22);
+  --ring: oklch(0.79 0.11 190);
+  --chart-1: oklch(0.79 0.11 190);
+  --chart-2: oklch(0.7 0.14 195);
+  --sidebar-primary: oklch(0.79 0.11 190);
+  --sidebar-primary-foreground: oklch(0.24 0.03 250);
+  --sidebar-ring: oklch(0.79 0.11 190);
+}
+
 html[data-theme="emerald"] {
   --primary: oklch(0.62 0.16 162);
   --primary-foreground: oklch(0.16 0.02 162);
