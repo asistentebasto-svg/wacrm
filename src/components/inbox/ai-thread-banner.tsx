@@ -134,8 +134,14 @@ export function AiThreadBanner({
     [conversationId, currentUserId, onChange, t],
   );
 
-  // Account has no auto-reply → nothing to show. (Still loading → nothing.)
-  if (!autoReplyOn) return null;
+  // BASTO: el bot que atiende estas conversaciones es n8n, no el auto-reply propio de
+  // wacrm — que dejamos apagado a proposito para que no contesten los dos a la vez.
+  // Ese bot externo lee `conversations.ai_autoreply_disabled` y `assigned_agent_id`,
+  // exactamente los mismos campos que escribe este banner, asi que la palanca tiene que
+  // verse aunque el AI propio de wacrm este off. Upstream la ocultaba con
+  // `if (!autoReplyOn) return null`, y por eso el operador no encontraba como tomar
+  // una conversacion cuando le llegaba una alerta.
+  void autoReplyOn;
 
   // Paused here (a human took over, or the model handed off).
   if (paused) {
