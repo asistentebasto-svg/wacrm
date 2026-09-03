@@ -9,7 +9,6 @@ import { useTotalUnread } from "@/hooks/use-total-unread";
 import { useUnreadNotifications } from "@/hooks/use-unread-notifications";
 import {
   Bell,
-  Bot,
   Crown,
   GitBranch,
   LayoutDashboard,
@@ -22,7 +21,6 @@ import {
   UserCog,
   Users,
   UsersRound,
-  Workflow,
   X,
   Zap,
 } from "lucide-react";
@@ -97,8 +95,12 @@ const navItems: NavItem[] = [
   { href: "/pipelines", labelKey: "pipelines", icon: GitBranch },
   { href: "/broadcasts", labelKey: "broadcasts", icon: Radio },
   { href: "/automations", labelKey: "automations", icon: Zap },
-  { href: "/flows", labelKey: "flows", icon: Workflow, beta: true },
-  { href: "/agents", labelKey: "aiAgents", icon: Bot },
+  // BASTO: "Flujos" y "Agentes de IA" quedan fuera del menu a proposito.
+  // La automatizacion de las conversaciones vive en n8n, no en wacrm. En particular,
+  // "Agentes de IA" es donde se prende el auto-reply propio de wacrm: si alguien lo
+  // activa, el proveedor recibe DOS respuestas (la de wacrm y la de n8n). Ocultarlo
+  // saca ese riesgo del alcance del operador.
+  // Las rutas /flows y /agents siguen existiendo si se entra por URL directa.
 ];
 
 const bottomNavItems = [
