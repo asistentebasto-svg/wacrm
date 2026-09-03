@@ -489,13 +489,21 @@ function ConversationItem({
                 {conversation.unread_count}
               </span>
             )}
-            <span
-              className={cn(
-                "h-2 w-2 rounded-full",
-                STATUS_COLORS[conversation.status]
-              )}
-              title={conversation.status}
-            />
+            {/* El punto de estado se dibujaba SIEMPRE, y como practicamente todas las
+                conversaciones estan "open" quedaban todas con un punto verde, que se
+                leia como "no leida" cuando en realidad no significaba nada. Ahora solo
+                aparece cuando el estado NO es el normal — ambar para pendiente, gris
+                para cerrada — y el unico marcador de una conversacion abierta es la
+                burbuja de no leidos de arriba. */}
+            {conversation.status !== "open" && (
+              <span
+                className={cn(
+                  "h-2 w-2 rounded-full",
+                  STATUS_COLORS[conversation.status]
+                )}
+                title={conversation.status}
+              />
+            )}
           </div>
         </div>
       </div>
