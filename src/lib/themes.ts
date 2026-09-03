@@ -44,7 +44,10 @@ export const MODES = ["light", "dark"] as const;
 
 export type Mode = (typeof MODES)[number];
 
-export const DEFAULT_MODE: Mode = "dark";
+// BASTO arranca en claro para quedar alineado con el dashboard de compras
+// (fondo gris claro, tarjetas blancas, barra lateral oscura). Quien prefiera
+// oscuro lo cambia en Configuracion > Apariencia y queda guardado.
+export const DEFAULT_MODE: Mode = "light";
 
 export const MODE_STORAGE_KEY = "wacrm.mode";
 

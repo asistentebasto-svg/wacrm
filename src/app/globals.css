@@ -145,6 +145,35 @@ html[data-mode="light"] {
   --sidebar-border: oklch(0.922 0.004 260);
 }
 
+/* ---- BASTO en modo claro: mismo lenguaje visual que el dashboard de compras ----
+ *
+ * El dashboard (dashboard-basto.vercel.app) tiene una firma concreta: barra
+ * lateral oscura contra contenido claro, tarjetas blancas que se despegan de un
+ * fondo gris azulado, y el teal de marca solo como acento. El modo claro generico
+ * de wacrm trae la barra lateral clara, asi que no alcanzaba con activarlo.
+ *
+ * Estos son los mismos valores del theme del dashboard (globals.css de
+ * CLIENTES/BASTO/dashboard), para que las dos apps se lean como un solo producto.
+ * Gana por especificidad sobre el bloque html[data-mode="light"] de arriba.
+ * ------------------------------------------------------------------------- */
+html[data-theme="basto"][data-mode="light"] {
+  /* Fondo gris azulado: las tarjetas, que son blanco puro, se despegan de el.
+     El modo claro generico usa un fondo casi blanco y las tarjetas se pierden. */
+  --background: #f0f2f5;
+  --foreground: #1a2332;
+  --card-2: #f5f8f5;
+  --muted: #e9edf2;
+  --border: #dde3ea;
+  --input: #dde3ea;
+}
+
+/* NOTA: el dashboard ademas tiene la barra lateral OSCURA sobre contenido claro.
+   Aca no alcanza con tokens: el componente Sidebar pinta el fondo con `bg-card` y
+   los items con `text-muted-foreground`, no con las variables --sidebar-*. Para
+   replicar el rail oscuro hay que reescribir esas clases en
+   src/components/layout/sidebar.tsx y revisar el strip de cuenta, los chips de rol
+   y el pie. Queda pendiente como un segundo paso. */
+
 /* ---- ACCENT: primary color ---- */
 
 :root,
