@@ -132,6 +132,49 @@ describe('buildSendComponents — header', () => {
     });
   });
 
+  it('labels a document header with headerDocumentFilename', () => {
+    // Without `filename` WhatsApp shows "Sin titulo" above the file, no
+    // matter what the URL is called: Meta reads the label from the
+    // document object, not from the link.
+    const components = buildSendComponents(
+      row({ header_type: 'document', header_media_url: 'https://x.com/a1b2c3.pdf' }),
+      { headerDocumentFilename: 'Analisis BASTO.pdf' },
+    );
+    expect(components[0]).toEqual({
+      type: 'header',
+      parameters: [
+        {
+          type: 'document',
+          document: {
+            link: 'https://x.com/a1b2c3.pdf',
+            filename: 'Analisis BASTO.pdf',
+          },
+        },
+      ],
+    });
+  });
+
+  it('omits filename when the caller does not set one', () => {
+    const components = buildSendComponents(
+      row({ header_type: 'document', header_media_url: 'https://x.com/doc.pdf' }),
+    );
+    expect(components[0]).toEqual({
+      type: 'header',
+      parameters: [{ type: 'document', document: { link: 'https://x.com/doc.pdf' } }],
+    });
+  });
+
+  it('ignores headerDocumentFilename on an image header', () => {
+    const components = buildSendComponents(
+      row({ header_type: 'image', header_media_url: 'https://x.com/s.jpg' }),
+      { headerDocumentFilename: 'no-va-aca.pdf' },
+    );
+    expect(components[0]).toEqual({
+      type: 'header',
+      parameters: [{ type: 'image', image: { link: 'https://x.com/s.jpg' } }],
+    });
+  });
+
   it('uses an explicit headerMediaId override as the media id', () => {
     const components = buildSendComponents(
       row({ header_type: 'image', header_media_url: 'https://x.com/s.jpg' }),
