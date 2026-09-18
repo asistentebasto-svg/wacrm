@@ -322,9 +322,10 @@ export async function POST(request: Request) {
             err instanceof Error ? err.message : 'Unknown Meta API error'
           console.error('Phone number /register failed:', registrationError)
           // We deliberately fall through and still save the row so the
-          // user can retry without re-entering everything. The UI
-          // surfaces `last_registration_error` so they see WHY it's
-          // not actually live yet.
+          // user can retry without re-entering everything. The number
+          // stays usable for sending and receiving; what's missing is
+          // the /register step, which Settings reports on its own via
+          // `last_registration_error` and `registered_at`.
         }
       }
     }
@@ -358,8 +359,22 @@ export async function POST(request: Request) {
       waba_id: waba_id || null,
       access_token: encryptedAccessToken,
       verify_token: encryptedVerifyToken,
-      status: registrationError ? 'disconnected' : 'connected',
-      connected_at: registrationError ? null : new Date().toISOString(),
+      // A failed /register does NOT mean the connection is dead. The
+      // credentials were verified against Meta a few lines up
+      // (verifyPhoneNumber returns 400 and never reaches this point on
+      // failure), so the number can send and receive either way. The
+      // PIN step is best-effort — it only matters for inbound routing
+      // on production numbers under a shared WABA — and its outcome is
+      // already carried by `registered_at` + `last_registration_error`,
+      // which Settings surfaces as "Not registered".
+      //
+      // Marking the whole row 'disconnected' instead made the inbox
+      // shout "WhatsApp not connected" over a perfectly live number:
+      // BASTO's Proveedores number sat like that from 2026-08-26 with a
+      // "(#133005) Two step verification PIN Mismatch" while it kept
+      // handling every supplier conversation for three weeks.
+      status: 'connected',
+      connected_at: new Date().toISOString(),
       registered_at: registrationError ? null : registeredAt,
       subscribed_apps_at: subscribedAppsAt ?? null,
       last_registration_error: registrationError,
