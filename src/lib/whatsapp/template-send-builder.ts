@@ -43,6 +43,13 @@ export interface SendTimeParams {
   /** Alternative: send the media by Meta media id (from prior upload). */
   headerMediaId?: string;
   /**
+   * Name WhatsApp shows for a DOCUMENT header. Without it the recipient
+   * sees "Sin titulo" / "Untitled" above the file, no matter what the URL
+   * is called: Meta reads the label from `document.filename`, not from the
+   * link. Ignored for image/video headers.
+   */
+  headerDocumentFilename?: string;
+  /**
    * Per-button overrides keyed by the button's index in the
    * template's `buttons` array. Used for URL buttons with a {{1}}
    * suffix and for COPY_CODE buttons whose example you want to
@@ -65,7 +72,7 @@ type MetaSendParameter =
   | { type: 'text'; text: string }
   | { type: 'image'; image: { link?: string; id?: string } }
   | { type: 'video'; video: { link?: string; id?: string } }
-  | { type: 'document'; document: { link?: string; id?: string } }
+  | { type: 'document'; document: { link?: string; id?: string; filename?: string } }
   | { type: 'coupon_code'; coupon_code: string }
   | { type: 'payload'; payload: string };
 
@@ -118,7 +125,12 @@ function buildHeaderComponent(
         ? { type: 'image', image: mediaPayload }
         : headerType === 'video'
           ? { type: 'video', video: mediaPayload }
-          : { type: 'document', document: mediaPayload },
+          : {
+            type: 'document',
+            document: params.headerDocumentFilename
+              ? { ...mediaPayload, filename: params.headerDocumentFilename }
+              : mediaPayload,
+          },
     ],
   };
 }
