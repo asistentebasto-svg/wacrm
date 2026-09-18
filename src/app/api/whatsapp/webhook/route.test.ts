@@ -538,3 +538,84 @@ describe('inbound webhook: after() awaits automations (#368)', () => {
     expect(h.state.automationCompleted).toBe(3)
   })
 })
+
+describe('inbound webhook: message.received is dispatched before the optional work', () => {
+  // A supplier's PDF quote reached wacrm, was written to `messages`, and the
+  // webhook never fired — so the integration that drives the downstream
+  // pipeline never heard about it. The dispatch used to sit at the very end of
+  // the handler, behind the conversation bump, flows, automations and the AI
+  // auto-reply. Any of those can throw or outlive the `after()` budget, and
+  // media messages are the most exposed because they already spent part of it
+  // downloading and mirroring the file.
+  const receivedCalls = () =>
+    h.dispatchWebhookEvent.mock.calls.filter((c) => c[2] === 'message.received')
+
+  it('still notifies subscribers when the flow engine throws', async () => {
+    h.dispatchInboundToFlows.mockRejectedValue(new Error('flow engine caido'))
+
+    await runWebhook().catch(() => {})
+
+    expect(receivedCalls()).toHaveLength(1)
+  })
+
+  it('still notifies subscribers when the AI auto-reply throws', async () => {
+    h.dispatchInboundToAiReply.mockRejectedValue(new Error('sin credito'))
+
+    await runWebhook().catch(() => {})
+
+    expect(receivedCalls()).toHaveLength(1)
+  })
+
+  it('notifies before handing the message to the flow engine', async () => {
+    const orden: string[] = []
+    h.dispatchWebhookEvent.mockImplementation(async (...args: unknown[]) => {
+      if (args[2] === 'message.received') orden.push('webhook')
+    })
+    h.dispatchInboundToFlows.mockImplementation(async () => {
+      orden.push('flows')
+      return { consumed: false }
+    })
+
+    await runWebhook()
+
+    expect(orden).toEqual(['webhook', 'flows'])
+  })
+
+  it('dispatches for a PDF document, the case that was losing quotes', async () => {
+    mockGetMediaUrl.mockResolvedValue({
+      url: 'https://lookaside.fbsbx.com/whatsapp/doc',
+      mimeType: 'application/pdf',
+      fileSize: 4096,
+    })
+    mockDownloadMedia.mockResolvedValue({
+      buffer: Buffer.alloc(4096),
+      contentType: 'application/pdf',
+    })
+
+    await runWebhook({
+      id: 'wamid.COTIZACION',
+      from: '15551230000',
+      timestamp: '1700000000',
+      type: 'document',
+      document: {
+        id: '9999999999',
+        mime_type: 'application/pdf',
+        filename: 'cotizacion.pdf',
+      },
+    })
+
+    expect(receivedCalls()).toHaveLength(1)
+    expect(receivedCalls()[0][3]).toMatchObject({
+      whatsapp_message_id: 'wamid.COTIZACION',
+      content_type: 'document',
+    })
+  })
+
+  it('a replayed delivery still does not re-dispatch', async () => {
+    h.state.messageUpsertResult = []
+
+    await runWebhook()
+
+    expect(receivedCalls()).toHaveLength(0)
+  })
+})

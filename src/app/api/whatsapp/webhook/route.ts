@@ -739,6 +739,35 @@ async function processMessage(
     return
   }
 
+  // message.received webhook (public API). Dispatched HERE, immediately after the
+  // row is persisted — not at the end of the handler, where it used to live.
+  //
+  // A supplier's PDF quote reached wacrm, was written to `messages`, and the
+  // webhook never fired: the integration that drives the whole downstream
+  // pipeline never heard about it. Everything that sits between the insert and
+  // the end of this handler — the conversation bump, flows, automations, the AI
+  // auto-reply — is optional work relative to "tell our subscribers a message
+  // arrived", and any of it can throw or outlive the `after()` budget. Media
+  // messages are the most exposed, because they already spent part of that
+  // budget downloading the file from Meta and mirroring it to storage.
+  //
+  // The payload only needs values that exist by now, so moving it earlier costs
+  // nothing. The duplicate check above still runs first, so a replayed delivery
+  // does not re-dispatch (issue #367).
+  //
+  // Awaited — not fire-and-forget — because we're inside the route's `after()`
+  // block, which only keeps the function alive for promises it can see; a
+  // detached promise could be frozen before it delivers. `dispatchWebhookEvent`
+  // early-exits when the account has no matching endpoint and never throws.
+  // (conversation.created is emitted earlier, right after the thread is opened.)
+  await dispatchWebhookEvent(supabaseAdmin(), accountId, 'message.received', {
+    conversation_id: conversation.id,
+    contact_id: contactRecord.id,
+    whatsapp_message_id: message.id,
+    content_type: contentType,
+    text: contentText,
+  })
+
   // Update conversation. The unread bump is done DB-side (migration 037's
   // bump_conversation_on_inbound) rather than as a read-modify-write of the
   // snapshot loaded above: two inbound messages for the same conversation
@@ -880,20 +909,6 @@ async function processMessage(
     })
   }
 
-  // message.received webhook (public API). Awaited — not fire-and-forget
-  // — because we're inside the route's `after()` block, which only keeps
-  // the function alive for promises it can see; a detached promise could
-  // be frozen before it delivers. `dispatchWebhookEvent` early-exits
-  // when the account has no matching endpoint and never throws.
-  // (conversation.created is emitted earlier, right after the thread is
-  // opened.)
-  await dispatchWebhookEvent(supabaseAdmin(), accountId, 'message.received', {
-    conversation_id: conversation.id,
-    contact_id: contactRecord.id,
-    whatsapp_message_id: message.id,
-    content_type: contentType,
-    text: contentText,
-  })
 }
 
 async function parseMessageContent(
