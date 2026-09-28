@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { resolveWhatsAppConfigId } from '@/lib/whatsapp/resolve-config'
 import { requireRole, toErrorResponse } from '@/lib/auth/account'
 import {
   checkRateLimit,
@@ -126,11 +127,14 @@ export async function POST(request: Request) {
         )
       }
 
+      // Envio saliente: sale por el numero primario de la cuenta.
+      const outboundConfigId = await resolveWhatsAppConfigId(supabase, accountId)
       const resolved = await findOrCreateConversation(
         supabase,
         accountId,
         userId,
-        contact_id
+        contact_id,
+        outboundConfigId
       )
       if (!resolved) {
         return NextResponse.json(
@@ -203,6 +207,11 @@ async function findOrCreateConversation(
   accountId: string,
   userId: string,
   contactId: string,
+  // Fase 1: el numero desde el que se envia. En un envio saliente es el
+  // primario de la cuenta (lo resuelve el llamador). Se escribe al crear
+  // la conversacion; el lookup sigue por (account, contact) como el
+  // webhook, hasta B2.
+  whatsappConfigId: string | null,
 ): Promise<string | null> {
   const { data: existing } = await supabase
     .from('conversations')
@@ -219,6 +228,7 @@ async function findOrCreateConversation(
       account_id: accountId,
       user_id: userId,
       contact_id: contactId,
+      whatsapp_config_id: whatsappConfigId,
     })
     .select('id')
     .single()

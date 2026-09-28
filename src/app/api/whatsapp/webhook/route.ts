@@ -307,6 +307,9 @@ async function processWebhook(body: { entry?: WhatsAppWebhookEntry[] }) {
           // Tenancy — drives every contact / conversation lookup
           // and the engines' active-row dispatch.
           config.account_id,
+          // Fase 1: el numero por el que entro (config ya resuelto por
+          // phone_number_id arriba). Va a la conversacion.
+          config.id,
           // Audit / sender-of-record — used as the user_id on row
           // inserts that need it for NOT NULL FK compliance. Always
           // the admin who saved the WhatsApp config.
@@ -579,6 +582,11 @@ async function processMessage(
   // contact / conversation / message row created downstream is
   // stamped with this so any member of the account can see it.
   accountId: string,
+  // Which of the account's WhatsApp numbers this message came in on
+  // (Fase 1). Stamped onto the conversation so, once an account has more
+  // than one number, the same contact writing to two numbers yields two
+  // threads instead of one merged blur.
+  whatsappConfigId: string,
   // Sender-of-record for inserts that need a NOT NULL user_id FK
   // (contacts, conversations). Always the admin who saved the
   // WhatsApp config; the choice is arbitrary post-017 but stable.
@@ -604,6 +612,7 @@ async function processMessage(
   // Find or create conversation
   const convResult = await findOrCreateConversation(
     accountId,
+    whatsappConfigId,
     configOwnerUserId,
     contactRecord.id
   )
@@ -1189,6 +1198,12 @@ async function findOrCreateContact(
 
 async function findOrCreateConversation(
   accountId: string,
+  // Fase 1: el numero por el que entro el mensaje. Se ESCRIBE al crear,
+  // pero el lookup de abajo sigue siendo por (account, contact): con un
+  // solo numero por cuenta las dos claves son equivalentes, y la clave de
+  // dedup de 3 columnas + el lookup por numero se activan juntos en B2,
+  // cuando una cuenta pueda tener mas de un numero.
+  whatsappConfigId: string,
   configOwnerUserId: string,
   contactId: string,
 ) {
@@ -1230,6 +1245,7 @@ async function findOrCreateConversation(
       account_id: accountId,
       user_id: configOwnerUserId,
       contact_id: contactId,
+      whatsapp_config_id: whatsappConfigId,
     })
     .select()
     .single()
