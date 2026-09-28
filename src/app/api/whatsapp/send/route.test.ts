@@ -91,9 +91,27 @@ function makeSupabaseMock() {
 
     const b: Record<string, unknown> = {}
     const chain = () => b
-    for (const m of ['select', 'eq', 'in', 'order', 'limit', 'update', 'delete']) {
+    for (const m of ['select', 'eq', 'in', 'order', 'update', 'delete']) {
       b[m] = vi.fn(chain)
     }
+    // Fase 1: resolveWhatsAppConfigId resolves the primary via `.limit(1)`
+    // as a TERMINAL that yields an array of rows. For every other table
+    // `.limit` stays a chain link.
+    b.limit = vi.fn(() =>
+      table === 'whatsapp_config'
+        ? Promise.resolve({
+            data: [
+              {
+                id: 'cfg-1',
+                account_id: 'acct-1',
+                phone_number_id: 'PNID-1',
+                access_token: 'enc-token',
+              },
+            ],
+            error: null,
+          })
+        : b
+    )
     b.insert = vi.fn((payload: Record<string, unknown>) => {
       didInsert = true
       if (table === 'conversations') {

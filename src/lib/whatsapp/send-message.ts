@@ -48,6 +48,7 @@ import {
   templateBodyParams,
   templateContentText,
 } from '@/lib/whatsapp/template-body';
+import { resolveWhatsAppConfig } from '@/lib/whatsapp/resolve-config';
 
 export const MEDIA_KINDS = ['image', 'video', 'document', 'audio'] as const;
 export const VALID_MESSAGE_TYPES = [
@@ -251,14 +252,16 @@ export async function sendMessageToConversation(
     );
   }
 
-  // WhatsApp config, account-scoped.
-  const { data: config, error: configError } = await db
-    .from('whatsapp_config')
-    .select('*')
-    .eq('account_id', accountId)
-    .single();
+  // WhatsApp config = the number this conversation is ON, so a reply
+  // goes out FROM the number the customer wrote to (Fase 1). Resolved
+  // from `conversation.whatsapp_config_id`; a legacy conversation with a
+  // null id falls through to the account's primary, which before the
+  // account merge is the only number anyway.
+  const config = await resolveWhatsAppConfig(db, accountId, {
+    configId: conversation.whatsapp_config_id as string | null | undefined,
+  });
 
-  if (configError || !config) {
+  if (!config) {
     throw new SendMessageError(
       'whatsapp_not_configured',
       'WhatsApp not configured. Please set up your WhatsApp integration first.',

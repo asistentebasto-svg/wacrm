@@ -210,6 +210,7 @@ function sendPathDb(
 ): SupabaseClient {
   const conversation = {
     id: 'cv-1',
+    whatsapp_config_id: 'cfg-1',
     contact: { id: 'ct-1', phone: '+15551234567' },
   };
   const config = {
@@ -231,7 +232,16 @@ function sendPathDb(
           if (table === 'conversations') captured.conversation = row;
           return builder;
         },
-        maybeSingle: async () => ({ data: null, error: null }),
+        // Fase 1: resolveWhatsAppConfig loads the row by id here.
+        maybeSingle: async () =>
+          table === 'whatsapp_config'
+            ? { data: config, error: null }
+            : { data: null, error: null },
+        // Fase 1: resolveWhatsAppConfigId picks the primary via .limit(1).
+        limit: async () =>
+          table === 'whatsapp_config'
+            ? { data: [{ id: config.id }], error: null }
+            : { data: [], error: null },
         single: async () => {
           if (table === 'conversations') {
             return { data: conversation, error: null };

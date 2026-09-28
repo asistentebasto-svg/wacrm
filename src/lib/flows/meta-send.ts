@@ -16,6 +16,7 @@ import {
   isRecipientNotAllowedError,
 } from '@/lib/whatsapp/phone-utils'
 import { supabaseAdmin } from './admin-client'
+import { resolveWhatsAppConfigForConversation } from '@/lib/whatsapp/resolve-config';
 
 // ------------------------------------------------------------
 // Flows-side Meta sender (interactive variants).
@@ -82,12 +83,12 @@ export async function engineSendText(
     throw new Error(`contact phone invalid: ${contact.phone}`)
   }
 
-  const { data: config, error: configErr } = await db
-    .from('whatsapp_config')
-    .select('*')
-    .eq('account_id', args.accountId)
-    .single()
-  if (configErr || !config) {
+  const config = await resolveWhatsAppConfigForConversation(
+    db,
+    args.accountId,
+    args.conversationId,
+  )
+  if (!config) {
     throw new Error('WhatsApp not configured for this account')
   }
 
@@ -192,12 +193,12 @@ export async function engineSendMedia(
     throw new Error(`contact phone invalid: ${contact.phone}`)
   }
 
-  const { data: config, error: configErr } = await db
-    .from('whatsapp_config')
-    .select('*')
-    .eq('account_id', args.accountId)
-    .single()
-  if (configErr || !config) {
+  const config = await resolveWhatsAppConfigForConversation(
+    db,
+    args.accountId,
+    args.conversationId,
+  )
+  if (!config) {
     throw new Error('WhatsApp not configured for this account')
   }
 
@@ -344,12 +345,12 @@ async function sendInteractiveViaMeta(
     throw new Error(`contact phone invalid: ${contact.phone}`)
   }
 
-  const { data: config, error: configErr } = await db
-    .from('whatsapp_config')
-    .select('*')
-    .eq('account_id', input.accountId)
-    .single()
-  if (configErr || !config) {
+  const config = await resolveWhatsAppConfigForConversation(
+    db,
+    input.accountId,
+    input.conversationId,
+  )
+  if (!config) {
     throw new Error('WhatsApp not configured for this account')
   }
 
