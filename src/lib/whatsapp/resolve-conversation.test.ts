@@ -56,6 +56,15 @@ function makeDb(script: Script): SupabaseClient {
         convLookupCalls++;
         return Promise.resolve({ data: row ? [row] : [], error: null });
       }
+      // resolveWhatsAppConfigId (Fase 1) resolves the primary via
+      // `.eq('is_primary', true).limit(1)`. Model "a config exists" off
+      // the same `script.config` the test already uses for presence.
+      if (table === 'whatsapp_config' && mode === 'select') {
+        return Promise.resolve({
+          data: script.config ? [{ id: 'cfg-1' }] : [],
+          error: null,
+        });
+      }
       return Promise.resolve({ data: [], error: null });
     },
     like: () => {

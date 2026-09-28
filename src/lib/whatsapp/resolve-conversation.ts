@@ -24,6 +24,7 @@ import { findExistingContact, isUniqueViolation } from '@/lib/contacts/dedupe';
 import { sanitizePhoneForMeta, isValidE164 } from '@/lib/whatsapp/phone-utils';
 import { SendMessageError } from '@/lib/whatsapp/send-message';
 import { resolveAuditUserId, ContactError } from '@/lib/api/v1/contacts';
+import { resolveWhatsAppConfigId } from '@/lib/whatsapp/resolve-config';
 
 export interface ResolvedConversation {
   conversationId: string;
@@ -54,13 +55,11 @@ export async function resolveConversationByPhone(
   }
 
   // Fail fast (and create nothing) when the account has no WhatsApp
-  // connected — the same error the send would raise anyway.
-  const { data: config } = await db
-    .from('whatsapp_config')
-    .select('id')
-    .eq('account_id', accountId)
-    .maybeSingle();
-  if (!config) {
+  // connected — the same error the send would raise anyway. Fase 1: an
+  // account can now have several numbers; this resolves the primary (the
+  // API doesn't pick a sender), and its id stamps the conversation.
+  const whatsappConfigId = await resolveWhatsAppConfigId(db, accountId);
+  if (!whatsappConfigId) {
     throw new SendMessageError(
       'whatsapp_not_configured',
       'WhatsApp not configured. Please set up your WhatsApp integration first.',
@@ -146,7 +145,8 @@ export async function resolveConversationByPhone(
     db,
     accountId,
     contactId,
-    ownerUserId
+    ownerUserId,
+    whatsappConfigId
   );
 
   return { conversationId, contactId, contactCreated };
@@ -162,7 +162,10 @@ async function findOrCreateConversationRow(
   db: SupabaseClient,
   accountId: string,
   contactId: string,
-  ownerUserId: string
+  ownerUserId: string,
+  // Fase 1: el numero al que queda atada la conversacion al crearla. El
+  // lookup sigue por (account, contact) como el webhook hasta B2.
+  whatsappConfigId: string
 ): Promise<string> {
   const { data: existing, error: findErr } = await db
     .from('conversations')
@@ -187,6 +190,7 @@ async function findOrCreateConversationRow(
       account_id: accountId,
       user_id: ownerUserId,
       contact_id: contactId,
+      whatsapp_config_id: whatsappConfigId,
     })
     .select('id')
     .single();
