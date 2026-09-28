@@ -24,6 +24,24 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+/**
+ * The whatsapp_config row shape the send paths use. Not exhaustive —
+ * just the columns callers read. `select('*')` returns the rest too.
+ */
+export interface WhatsAppConfigRow {
+  id: string;
+  account_id: string;
+  user_id: string;
+  phone_number_id: string;
+  waba_id: string | null;
+  access_token: string;
+  status: string;
+  is_primary: boolean;
+  label: string | null;
+  mirror_inbound_media: boolean;
+  [key: string]: unknown;
+}
+
 export interface ResolveConfigOptions {
   /** A specific number the caller chose. Ignored if it isn't this
    *  account's — the fallback to primary then applies, so a bad id
@@ -94,4 +112,68 @@ export async function resolveWhatsAppConfigId(
     return null;
   }
   return any.data && any.data.length > 0 ? any.data[0].id : null;
+}
+
+/**
+ * Like `resolveWhatsAppConfigId`, but returns the WHOLE config row
+ * (access_token, phone_number_id, …) — what the send paths need to
+ * actually call Meta. Same precedence: a valid account-scoped
+ * `configId`, else the primary, else the oldest.
+ *
+ * The send core passes the conversation's `whatsapp_config_id` as
+ * `configId`, so a reply goes out FROM the number the customer wrote
+ * to. A legacy conversation with a null id (created before Fase 1)
+ * falls through to the primary, which before the merge is the only
+ * number anyway — so behaviour is unchanged until an account actually
+ * has two.
+ *
+ * Returns `null` when the account has no connected number.
+ */
+export async function resolveWhatsAppConfig(
+  db: SupabaseClient,
+  accountId: string,
+  opts: ResolveConfigOptions = {},
+): Promise<WhatsAppConfigRow | null> {
+  const id = await resolveWhatsAppConfigId(db, accountId, opts);
+  if (!id) return null;
+
+  const { data, error } = await db
+    .from('whatsapp_config')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+  if (error) {
+    console.error('[resolve-config] row load error:', error.message);
+    return null;
+  }
+  return (data as WhatsAppConfigRow) ?? null;
+}
+
+/**
+ * The full config to REPLY on within a conversation: the number the
+ * conversation is on. Loads `conversations.whatsapp_config_id`
+ * (account-scoped) and resolves the row, falling back to the account's
+ * primary for a legacy conversation whose id is still null.
+ *
+ * This is the "answer from the number they wrote to" primitive shared by
+ * the send core and the flow/automation engines. Returns null when the
+ * conversation isn't found in this account or the account has no number.
+ */
+export async function resolveWhatsAppConfigForConversation(
+  db: SupabaseClient,
+  accountId: string,
+  conversationId: string,
+): Promise<WhatsAppConfigRow | null> {
+  const { data: conv, error } = await db
+    .from('conversations')
+    .select('whatsapp_config_id')
+    .eq('id', conversationId)
+    .eq('account_id', accountId)
+    .maybeSingle();
+  if (error) {
+    console.error('[resolve-config] conversation config lookup error:', error.message);
+    return null;
+  }
+  const configId = (conv?.whatsapp_config_id as string | null | undefined) ?? undefined;
+  return resolveWhatsAppConfig(db, accountId, { configId });
 }
