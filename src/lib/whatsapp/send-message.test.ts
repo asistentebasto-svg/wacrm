@@ -313,6 +313,24 @@ describe('sendMessageToConversation — template persistence (#483)', () => {
     );
   });
 
+  it('persists the template header document as media_url so the inbox can show it', async () => {
+    const captured: CapturedWrites = {};
+    await sendMessageToConversation(sendPathDb([TEMPLATE_ROW], captured), 'acct-1', {
+      conversationId: 'cv-1',
+      messageType: 'template',
+      templateName: 'order_update',
+      templateMessageParams: {
+        headerMediaUrl: 'https://example.com/presupuesto.pdf',
+        body: ['B456', 'Monday'],
+      },
+    });
+    // The PDF rides in the template header, not the top-level media_url —
+    // persist it anyway, else the Inbox shows a bodyless "Plantilla".
+    expect(captured.message?.media_url).toBe(
+      'https://example.com/presupuesto.pdf'
+    );
+  });
+
   it("does not override the composer's pre-rendered text", async () => {
     const captured: CapturedWrites = {};
     await sendMessageToConversation(sendPathDb([TEMPLATE_ROW], captured), 'acct-1', {

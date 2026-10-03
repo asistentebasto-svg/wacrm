@@ -162,6 +162,21 @@ function MessageContent({
               </p>
             )
           )}
+          {/* Templates can carry a header document (e.g. the budget PDF).
+              Render it so it's not invisible in the inbox. */}
+          {message.media_url && (
+            <div className="mt-2">
+              <MediaDocumentBubble
+                message={{
+                  ...message,
+                  content_text:
+                    message.media_url.split("/").pop()?.split("?")[0] ||
+                    t("document"),
+                }}
+                t={t}
+              />
+            </div>
+          )}
         </div>
       );
 
