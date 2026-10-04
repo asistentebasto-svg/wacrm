@@ -163,8 +163,8 @@ async function findOrCreateConversationRow(
   accountId: string,
   contactId: string,
   ownerUserId: string,
-  // Fase 1: el numero al que queda atada la conversacion al crearla. El
-  // lookup sigue por (account, contact) como el webhook hasta B2.
+  // Fase 1 / B2: el numero de la conversacion. El lookup es por
+  // (account, contact, config) -> conversaciones separadas por numero.
   whatsappConfigId: string
 ): Promise<string> {
   const { data: existing, error: findErr } = await db
@@ -172,6 +172,7 @@ async function findOrCreateConversationRow(
     .select('id')
     .eq('account_id', accountId)
     .eq('contact_id', contactId)
+    .eq('whatsapp_config_id', whatsappConfigId)
     .order('created_at', { ascending: true })
     .limit(1);
 
@@ -202,6 +203,7 @@ async function findOrCreateConversationRow(
         .select('id')
         .eq('account_id', accountId)
         .eq('contact_id', contactId)
+        .eq('whatsapp_config_id', whatsappConfigId)
         .order('created_at', { ascending: true })
         .limit(1);
       if (raced && raced.length > 0) {

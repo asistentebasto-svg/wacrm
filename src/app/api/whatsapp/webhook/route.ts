@@ -1199,10 +1199,10 @@ async function findOrCreateContact(
 async function findOrCreateConversation(
   accountId: string,
   // Fase 1: el numero por el que entro el mensaje. Se ESCRIBE al crear,
-  // pero el lookup de abajo sigue siendo por (account, contact): con un
-  // solo numero por cuenta las dos claves son equivalentes, y la clave de
-  // dedup de 3 columnas + el lookup por numero se activan juntos en B2,
-  // cuando una cuenta pueda tener mas de un numero.
+  // El lookup es por (account, contact, config): un contacto que escribe al
+  // numero A vs al numero B tiene conversaciones separadas (B2). Con un solo
+  // numero por cuenta el comportamiento es identico. Pareado con el indice
+  // unico (account_id, contact_id, whatsapp_config_id) de la migracion 043.
   whatsappConfigId: string,
   configOwnerUserId: string,
   contactId: string,
@@ -1225,6 +1225,7 @@ async function findOrCreateConversation(
     .select('*')
     .eq('account_id', accountId)
     .eq('contact_id', contactId)
+    .eq('whatsapp_config_id', whatsappConfigId)
     .order('created_at', { ascending: true })
     .limit(1)
 
@@ -1261,6 +1262,7 @@ async function findOrCreateConversation(
         .select('*')
         .eq('account_id', accountId)
         .eq('contact_id', contactId)
+        .eq('whatsapp_config_id', whatsappConfigId)
         .order('created_at', { ascending: true })
         .limit(1)
       if (raced && raced.length > 0) {
