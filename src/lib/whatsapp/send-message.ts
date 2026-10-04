@@ -471,6 +471,20 @@ export async function sendMessageToConversation(
           )
         : (contentText ?? null);
 
+  // Templates carry their header document inside `templateMessageParams`
+  // (`headerMediaUrl`), not the top-level `mediaUrl`. Persist it so the inbox
+  // can render the attachment — PDFs sent via template were reaching the
+  // client on WhatsApp but showing as a bodyless "Plantilla" in the CRM.
+  const templateHeaderMediaUrl =
+    templateMessageParams &&
+    typeof templateMessageParams === 'object' &&
+    typeof (templateMessageParams as Record<string, unknown>).headerMediaUrl ===
+      'string'
+      ? ((templateMessageParams as Record<string, unknown>)
+          .headerMediaUrl as string)
+      : null;
+  const persistedMediaUrl = mediaUrl || templateHeaderMediaUrl || null;
+
   const { data: messageRecord, error: msgError } = await db
     .from('messages')
     .insert({
@@ -478,7 +492,7 @@ export async function sendMessageToConversation(
       sender_type: 'agent',
       content_type: messageType,
       content_text: persistedText,
-      media_url: mediaUrl || null,
+      media_url: persistedMediaUrl,
       template_name: templateName || null,
       interactive_payload:
         messageType === 'interactive' ? interactivePayload : null,
