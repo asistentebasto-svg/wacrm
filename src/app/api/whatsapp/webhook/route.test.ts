@@ -63,17 +63,19 @@ vi.mock('@supabase/supabase-js', () => ({
             }),
           }
         case 'conversations':
-          // findOrCreateConversation: select().eq().eq().order().limit()
+          // findOrCreateConversation (B2): select().eq().eq().eq().order().limit()
           return {
             select: () => ({
               eq: () => ({
                 eq: () => ({
-                  order: () => ({
-                    limit: () =>
-                      Promise.resolve({
-                        data: [h.state.conversation],
-                        error: null,
-                      }),
+                  eq: () => ({
+                    order: () => ({
+                      limit: () =>
+                        Promise.resolve({
+                          data: [h.state.conversation],
+                          error: null,
+                        }),
+                    }),
                   }),
                 }),
               }),
