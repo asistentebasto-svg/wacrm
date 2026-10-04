@@ -384,9 +384,9 @@
         "custom": "Campos personalizados",
         "deals": "Oportunidades",
         "tags": "Etiquetas",
-      "noTags": "Sin etiquetas",
-      "noDeals": "Sin oportunidades",
-      "addNotePlaceholder": "Agregar una nota..."
+        "noTags": "Sin etiquetas",
+        "noDeals": "Sin oportunidades",
+        "addNotePlaceholder": "Agregar una nota..."
       },
       "actions": {
         "edit": "Editar",
@@ -1369,13 +1369,11 @@
       "deleteLocallyAria": "Eliminar plantilla localmente",
       "deleteMetaLocallyTitle": "Eliminar de Meta y localmente",
       "deleteLocallyTitle": "Eliminar localmente",
-
       "dialogEditTitle": "Editar plantilla de mensaje",
       "dialogNewTitle": "Nueva plantilla de mensaje",
       "dialogEditDesc": "Guardá tus cambios para reenviar a Meta. El estado volverá a PENDIENTE durante la revisión.",
       "dialogNewDesc": "Creá una plantilla y enviala a Meta para su aprobación. Una vez aprobada, podés usarla en difusiones y en la bandeja de entrada.",
       "authWarning": "Las plantillas de AUTENTICACIÓN tienen una estructura fija de cuerpo + botón de OTP que necesita un editor distinto. Por ahora crealas en el Administrador de WhatsApp de Meta y usá <bold>Sincronizar desde Meta</bold> para traerlas.",
-
       "templateName": "Nombre de la plantilla",
       "namePlaceholder": "p. ej. confirmacion_pedido",
       "nameFixed": "El nombre queda fijo una vez que la plantilla existe en Meta — creá una plantilla nueva para cambiarlo.",
@@ -1384,7 +1382,6 @@
       "language": "Idioma",
       "langFixed": "El idioma queda fijo una vez que la plantilla existe en Meta.",
       "langHint": "Debe coincidir con el código exacto en Meta — <code>en_US</code> y <code>en</code> son distintos.",
-
       "header": "Encabezado",
       "headerNone": "Ninguno",
       "headerText": "Texto",
@@ -1394,7 +1391,6 @@
       "headerTextPlaceholder": "Texto del encabezado (máx. 60 caracteres, {{1}} opcional)",
       "headerSampleAria": "Valor de ejemplo para la variable del encabezado",
       "headerSamplePlaceholder": "Valor de ejemplo para {{1}} (requerido para la revisión de Meta)",
-
       "uploadImage": "Subir imagen",
       "uploadHint": "JPEG o PNG, ≤5 MB",
       "mediaUrlPlaceholder": "https://… (o pegá un enlace público a {format})",
@@ -1402,17 +1398,14 @@
       "mediaHint": "Debe ser un enlace HTTPS de acceso público. Meta lo obtiene una vez durante la revisión, así que debe seguir activo por ~24 h.",
       "videoHint": " Recomendado: MP4 / 3GPP, ≤16 MB, ≤60 segundos.",
       "documentHint": " Recomendado: PDF, ≤100 MB.",
-
       "bodyText": "Texto del cuerpo",
       "bodyPlaceholder": "Hola {{1}}, tu pedido {{2}} está confirmado.",
       "bodyHint": "Usá {{1}}, {{2}} para variables (deben ser contiguas empezando en {{1}}).",
       "sampleValues": "Valores de ejemplo (Meta los usa para revisar tu plantilla)",
       "sampleAria": "Valor de ejemplo para la variable del cuerpo {var}",
       "samplePlaceholder": "Ejemplo para {var}",
-
       "footer": "Pie (opcional)",
       "footerPlaceholder": "Texto de pie opcional (máx. 60 caracteres)",
-
       "buttons": "Botones (opcional)",
       "addButton": "Agregar botón",
       "buttonsLimit": "Hasta {max} botones. Los botones de RESPUESTA_RÁPIDA deben ir antes de los de URL / teléfono / copiar-código.",
@@ -1425,19 +1418,16 @@
       "urlSamplePlaceholder": "Valor de ejemplo para {{1}} (requerido cuando la URL tiene una variable)",
       "phonePlaceholder": "+5491112345678",
       "codePlaceholder": "Código de ejemplo (p. ej. VERANO20)",
-
       "cancel": "Cancelar",
       "saving": "Guardando…",
       "submitting": "Enviando…",
       "saveResubmit": "Guardar y reenviar",
       "submitApproval": "Enviar para aprobación",
-
       "deleteDialogTitle": "¿Eliminar plantilla?",
       "deleteMetaDesc": "\"{name}\" se eliminará de Meta y de BASTO CRM. Las difusiones activas que usen esta plantilla empezarán a fallar en su próximo envío. Esto no se puede deshacer.",
       "deleteLocalDesc": "\"{name}\" se eliminará de BASTO CRM. Nunca se envió a Meta, así que no hace falta limpieza remota.",
       "deleting": "Eliminando…",
       "delete": "Eliminar",
-
       "toastLoadFailed": "No se pudieron cargar las plantillas",
       "toastSubmitFailed": "No se pudo enviar",
       "toastSubmitEditSuccess": "Edición enviada — Meta suele revisar dentro de las 24 horas.",
@@ -1583,7 +1573,6 @@
       "profileSaved": "Perfil guardado",
       "emailChangeFailed": "Falló el cambio de correo: {message}",
       "profileSavedEmailCheck": "Perfil guardado — revisá tu correo para confirmar el cambio de dirección",
-
       "passwordTitle": "Contraseña",
       "passwordDesc": "Usá al menos {min} caracteres. Seguirás con la sesión iniciada en este dispositivo después de cambiarla.",
       "currentPassword": "Contraseña actual",
@@ -1597,7 +1586,6 @@
       "currentPasswordIncorrect": "La contraseña actual es incorrecta",
       "passwordUpdateFailed": "Falló la actualización de la contraseña: {message}",
       "passwordUpdated": "Contraseña actualizada",
-
       "sessionsTitle": "Sesiones activas",
       "sessionsDesc": "Cerrá sesión en todos los dispositivos donde estés conectado — incluido este. Útil si perdiste una laptop o compartiste tu contraseña.",
       "signOutAll": "Cerrar sesión en todos los dispositivos",
@@ -1737,6 +1725,22 @@
       "reindex": "Reindexar",
       "reindexTooltip": "Volver a incrustar todos los documentos (p. ej. después de agregar una clave de embeddings)",
       "loading": "Cargando…"
+    },
+    "whatsappNumbers": {
+      "title": "Números conectados",
+      "description": "Los números de WhatsApp de esta cuenta. Uno es el primario: desde ese se envía cuando no hay una conversación que defina otro.",
+      "primary": "Primario",
+      "makePrimary": "Hacer primario",
+      "rename": "Renombrar",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "disconnect": "Desconectar",
+      "connected": "Conectado",
+      "disconnected": "Desconectado",
+      "unnamed": "Sin nombre",
+      "labelPlaceholder": "Nombre del número (ej: Ventas)",
+      "confirmDisconnect": "¿Desconectar este número? Sus conversaciones deben moverse o quedar sin él.",
+      "errorGeneric": "No se pudo completar la acción."
     }
   }
 }
